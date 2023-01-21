@@ -19,7 +19,7 @@ export function setTriggerOrders(orders) {
 	}
 }
 export function addToExecutionQueue(order) {
-	if (!executionQueue[orderId]) executionQueue[order.orderId] = order;
+	if (!executionQueue[order.orderId]) executionQueue[order.orderId] = order;
 }
 export function removeFromExecutionQueue(orderId) {
 	delete executionQueue[orderId];

@@ -5,7 +5,7 @@ let prices = {}; // market => [price, timestamp], stores latest sent prices
 
 export function setPrice(params) {
 
-	console.log('setPrice', params);
+	// console.log('setPrice', params);
 
 	let { market, price, timestamp } = params;
 

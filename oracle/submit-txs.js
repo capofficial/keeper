@@ -16,7 +16,7 @@ const MAX_TRIES = 10;
 let recentlyTriedExecuting = {}; // order id => [timestamp, tries]
 let recentlyTriedLiquidating = {}; // position key => [timestamp, tries]
 
-const connection = new EvmPriceServiceConnection("https://xc-testnet.pyth.network");
+const connection = new EvmPriceServiceConnection("https://xc-mainnet.pyth.network");
 
 function cleanRecents() {
 	for (const orderId in recentlyTriedExecuting) {
@@ -38,8 +38,8 @@ async function executeOrders() {
 	const executionQueue = getExecutionQueue();
 	const marketInfos = getMarketInfos();
 
-	// console.log('executionQueue', executionQueue);
-	// console.log('recentlyTriedExecuting', recentlyTriedExecuting);
+	console.log('executionQueue', executionQueue);
+	console.log('recentlyTriedExecuting', recentlyTriedExecuting);
 
 	if (Object.keys(executionQueue).length) {
 
@@ -63,6 +63,8 @@ async function executeOrders() {
 			recentlyTriedExecuting[orderId] = [Date.now(), tries];
 
 			orderIds.push(orderId * 1);
+
+			const order = executionQueue[orderId];
 			priceIds.push(marketInfos[order.market]?.pythFeed);
 			
 		}
@@ -74,10 +76,14 @@ async function executeOrders() {
 			return a - b;
 		});
 
+		console.log('priceIds', priceIds);
+
 		const priceUpdateData = await connection.getPriceFeedsUpdateData(priceIds);
 
 		const pythContract = await getContract('Pyth');
 		const updateFee = await pythContract.getUpdateFee(priceUpdateData);
+
+		console.log('TX', orderIds, priceUpdateData, updateFee);
 
 		const tx = await contract.executeOrders(orderIds, priceUpdateData, {value: updateFee});
 

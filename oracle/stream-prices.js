@@ -25,7 +25,7 @@ export default async function streamPrices() {
 		return;
 	}
 
-	connection = new EvmPriceServiceConnection("https://xc-testnet.pyth.network");
+	connection = new EvmPriceServiceConnection("https://xc-mainnet.pyth.network");
 
 	// map market => feedId and feedId => market
 	let priceIds = [];
@@ -39,20 +39,21 @@ export default async function streamPrices() {
 	// console.log('priceIds', priceIds);
 	// console.log('pythFeedToMarket', pythFeedToMarket);
 
-	// TEST
-	priceIds = [
-	  // You can find the ids of prices at https://pyth.network/developers/price-feed-ids#pyth-evm-testnet
-	  "f9c0172ba10dfa4d19088d94f5bf61d3b54d5bd7483a322a982e1373ee8ea31b", // BTC/USD price id in testnet
-	  "ca80ba6dc32e08d06f1aa886011eed1d77c77be9eb761cc10d72b7d0a2fd57a6", // ETH/USD price id in testnet
-	];
-	pythFeedToMarket = {
-		'f9c0172ba10dfa4d19088d94f5bf61d3b54d5bd7483a322a982e1373ee8ea31b': 'BTC-USD',
-		'ca80ba6dc32e08d06f1aa886011eed1d77c77be9eb761cc10d72b7d0a2fd57a6': 'ETH-USD'
-	};
+	// // TEST
+	// priceIds = [
+	//   // You can find the ids of prices at https://pyth.network/developers/price-feed-ids#pyth-evm-testnet
+	//   "0xf9c0172ba10dfa4d19088d94f5bf61d3b54d5bd7483a322a982e1373ee8ea31b", // BTC/USD price id in testnet
+	//   "0xca80ba6dc32e08d06f1aa886011eed1d77c77be9eb761cc10d72b7d0a2fd57a6", // ETH/USD price id in testnet
+	// ];
+	// pythFeedToMarket = {
+	// 	'0xf9c0172ba10dfa4d19088d94f5bf61d3b54d5bd7483a322a982e1373ee8ea31b': 'BTC-USD',
+	// 	'0xca80ba6dc32e08d06f1aa886011eed1d77c77be9eb761cc10d72b7d0a2fd57a6': 'ETH-USD'
+	// };
 
 	connection.subscribePriceFeedUpdates(priceIds, (priceFeed) => {
-		const market = pythFeedToMarket[priceFeed.id];
-		console.log(`Received update for ${priceFeed.id} (${market})`);
+		const feedId = `0x${priceFeed.id}`;
+		const market = pythFeedToMarket[feedId];
+		// console.log(`Received update for ${feedId} (${market})`);
 		const maxAge = marketInfos[market]?.pythMaxAge;
 		const priceObj = priceFeed.getPriceNoOlderThan(maxAge || 10);
 		if (priceObj) {
