@@ -1,0 +1,34 @@
+{
+  "apps" : [
+    {
+      "script"    : "./index.js",
+      "instances" : "1",
+      "exec_mode": "fork",
+      "log_date_format" : "YYYY-MM-DD HH:mm:ss Z",
+      "env_production": {
+        
+      }
+    },
+    // {
+    //   "script"    : "./indexer.js",
+    //   "instances" : "1",
+    //   "exec_mode": "fork",
+    //   "log_date_format" : "YYYY-MM-DD HH:mm:ss Z",
+    //   "env_production": {
+        
+    //   }
+    // },
+  ],
+
+  // Deployment Configuration
+    "deploy" : {
+      "production" : {
+         "user" : "ubuntu",
+         "host" : ["192.168.0.13", "192.168.0.14", "192.168.0.15"],
+         "ref"  : "origin/master",
+         "repo" : "git@github.com:Username/repository.git",
+         "path" : "/var/www/my-repository",
+         "post-deploy" : "npm install"
+      }
+    }
+}

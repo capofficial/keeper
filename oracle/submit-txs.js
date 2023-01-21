@@ -1,6 +1,7 @@
 // consumes queues and posts TXs to the chain, with retries on other networks
 // also checks receipt of tx, and accordingly updates local store, eg if error = !exists or success, remove order from store instead of waiting for event. because waiting for event will probably mean order gets re-added to the execution queue in the meantime, and is resent as TX
 import { EvmPriceServiceConnection } from '@pythnetwork/pyth-evm-js'
+import { PYTH_PRICE_SERVICE } from '../lib/config.js'
 
 import { getContract, withNetworkRetries, parseUnits } from '../lib/helpers.js'
 
@@ -16,7 +17,7 @@ const MAX_TRIES = 10;
 let recentlyTriedExecuting = {}; // order id => [timestamp, tries]
 let recentlyTriedLiquidating = {}; // position key => [timestamp, tries]
 
-const connection = new EvmPriceServiceConnection("https://xc-mainnet.pyth.network");
+const connection = new EvmPriceServiceConnection(PYTH_PRICE_SERVICE);
 
 function cleanRecents() {
 	for (const orderId in recentlyTriedExecuting) {
@@ -38,8 +39,8 @@ async function executeOrders() {
 	const executionQueue = getExecutionQueue();
 	const marketInfos = getMarketInfos();
 
-	console.log('executionQueue', executionQueue);
-	console.log('recentlyTriedExecuting', recentlyTriedExecuting);
+	// console.log('executionQueue', executionQueue);
+	// console.log('recentlyTriedExecuting', recentlyTriedExecuting);
 
 	if (Object.keys(executionQueue).length) {
 
@@ -76,7 +77,7 @@ async function executeOrders() {
 			return a - b;
 		});
 
-		console.log('priceIds', priceIds);
+		// console.log('priceIds', priceIds);
 
 		const priceUpdateData = await connection.getPriceFeedsUpdateData(priceIds);
 
@@ -89,7 +90,7 @@ async function executeOrders() {
 
 		const receipt = await tx.wait();
 
-		console.log('receipt', receipt);
+		console.log('executeOrders receipt', receipt);
 
 		// receipt.logs contains all events emitted by this tx, including errors
 		if (receipt && receipt.status == 1) {
@@ -159,6 +160,8 @@ async function liquidatePositions() {
 
 		const receipt = await tx.wait();
 
+		console.log('liquidatePositions receipt', receipt);
+
 		// receipt.logs contains all events emitted by this tx, including errors
 		if (receipt && receipt.status == 1) {
 
@@ -178,10 +181,6 @@ async function liquidatePositions() {
 let t;
 // called with small timeout after TXs have returned
 export default async function submitTXs() {
-
-	// console.log('submitTXs');
-
-	// return; // TEST
 
 	// all tx submissions have to be sequential to avoid nonce errors, meaning wait for receipt before submitting next tx
 

@@ -27,8 +27,6 @@ export function setPrice(params) {
 	const timePassed = Date.now() > lastTime + 30*1000;
 	const hasMarketOrders = getMarketOrders(market).length > 0;
 
-	console.log('pth', priceChanged, timePassed, hasMarketOrders);
-
 	if (priceChanged || timePassed || hasMarketOrders) {
 		prices[market] = [price, timestamp];
 		processNewPrice(market, price);

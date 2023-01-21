@@ -161,7 +161,7 @@ export default async function() {
 		promiseWithInterval(getMarketOrders, 3000);
 		promiseWithInterval(getTriggerOrders, 10 * 1000);
 		promiseWithInterval(getPositions, 30 * 1000);
-		promiseWithInterval(getMarkets, 60 * 1000); // has market.isClosed
+		promiseWithInterval(getMarkets, 60 * 1000);
 		promiseWithInterval(getFundingTrackers, 2 * 60 * 1000);
 
 	} catch(e) {
