@@ -119,6 +119,7 @@ async function liquidatePositions() {
 	// console.log('recentlyTriedLiquidating', recentlyTriedLiquidating);
 
 	const liquidationQueue = getLiquidationQueue();
+	const marketInfos = getMarketInfos();
 	
 	if (Object.keys(liquidationQueue).length) {
 
