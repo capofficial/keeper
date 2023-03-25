@@ -39,7 +39,7 @@ async function executeOrders() {
 	const executionQueue = getExecutionQueue();
 	const marketInfos = getMarketInfos();
 
-	// console.log('executionQueue', executionQueue);
+	console.log('executionQueue', executionQueue);
 	// console.log('recentlyTriedExecuting', recentlyTriedExecuting);
 
 	if (Object.keys(executionQueue).length) {
@@ -76,8 +76,6 @@ async function executeOrders() {
 		orderIds.sort(function (a, b) {
 			return a - b;
 		});
-
-		// console.log('priceIds', priceIds);
 
 		const priceUpdateData = await connection.getPriceFeedsUpdateData(priceIds);
 
@@ -121,6 +119,8 @@ async function liquidatePositions() {
 	const liquidationQueue = getLiquidationQueue();
 	const marketInfos = getMarketInfos();
 	
+	console.log('liquidationQueue', liquidationQueue);
+
 	if (Object.keys(liquidationQueue).length) {
 
 		// Use execute multiple
@@ -151,6 +151,8 @@ async function liquidatePositions() {
 		}
 
 		if (!users.length) return true;
+
+		console.log('users to liquidate', users);
 
 		const priceUpdateData = await connection.getPriceFeedsUpdateData(priceIds);
 
@@ -186,7 +188,6 @@ export default async function submitTXs() {
 	// all tx submissions have to be sequential to avoid nonce errors, meaning wait for receipt before submitting next tx
 
 	try {
-		// console.log('submitTXs2');
 		const execSuccess = await withNetworkRetries(executeOrders(), 4, 5000);
 		const liqSuccess = await withNetworkRetries(liquidatePositions(), 4, 5000);
 		cleanRecents();
