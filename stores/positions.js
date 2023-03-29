@@ -14,8 +14,22 @@ export function setPositions(_positions) {
 		if (!positions[position.market]) positions[position.market] = {};
 		positions[position.market][positionKey(position.user, position.market, position.asset)] = position;
 	}
+	// remove any positionUPLs items that are not in positions (eg a position that's been closed)
+	for (const market in positionUPLs) {
+		if (!positions[market]) {
+			delete positionUPLs[market];
+		}
+		if (!positionUPLs[market]) continue;
+		for (const key in positionUPLs[market]) {
+			if (!positions[market][key]) {
+				delete positionUPLs[market][key];
+			}
+		}
+	}
 }
 export function setPositionUPL(position, upl) {
+	// console.log('setPositionUPL', position, upl);
+	if (!positionUPLs[position.market]) positionUPLs[position.market] = {};
 	positionUPLs[position.market][positionKey(position.user, position.market, position.asset)] = 1 * upl;
 }
 export function addToLiquidationQueue(user, asset, market) {
@@ -50,7 +64,7 @@ export function getGlobalUPL() {
 			const position = positions[market][key];
 			if (!position) continue;
 			if (!totalUPL[position.asset]) totalUPL[position.asset] = 0;
-			totalUPL[position.asset] += positionUPLs[market][key] || 0;
+			totalUPL[position.asset] += positionUPLs[market]?.[key] || 0;
 		}
 	}
 	return totalUPL;

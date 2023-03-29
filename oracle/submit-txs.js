@@ -181,13 +181,17 @@ async function liquidatePositions() {
 
 }
 
-let lastRun = 0;
+let lastRun = Date.now(); // leave at least 15min before setting first global UPL
 async function setGlobalUPLs() {
 
 	// Set every 15min
 	if (lastRun > Date.now() - 15 * 60 * 1000) return;
 
 	const globalUPL = getGlobalUPL(); // asset => upl
+
+	// // TEST
+	// console.log('globalUPL', globalUPL);
+	// return;
 
 	let assets = Object.keys(globalUPL);
 
@@ -217,14 +221,27 @@ export default async function submitTXs() {
 
 	try {
 		const execSuccess = await withNetworkRetries(executeOrders(), 4, 5000);
-		const liqSuccess = await withNetworkRetries(liquidatePositions(), 4, 5000);
-
-		// if you're not a whitelisted keeper, comment the line below
-		const uplSuccess = await withNetworkRetries(setGlobalUPLs(), 4, 5000);
-
 		cleanRecents();
 	} catch(e) {
 		// Network failure even after retries
+		// console.log('HERE 1');
+		console.log(e);
+	}
+
+	try {
+		const liqSuccess = await withNetworkRetries(liquidatePositions(), 4, 5000);
+	} catch(e) {
+		// Network failure even after retries
+		// console.log('HERE 2');
+		console.log(e);
+	}
+
+	// if you're not a whitelisted keeper, comment this
+	try {
+		const uplSuccess = await withNetworkRetries(setGlobalUPLs(), 4, 5000);
+	} catch(e) {
+		// Network failure even after retries
+		// console.log('HERE 3');
 		console.log(e);
 	}
 
