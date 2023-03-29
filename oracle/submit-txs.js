@@ -7,7 +7,7 @@ import { getContract, withNetworkRetries, parseUnits } from '../lib/helpers.js'
 
 import { getMarketInfos } from '../stores/markets.js'
 import { getExecutionQueue, removeOrder, getAllTriggerOrders } from '../stores/orders.js'
-import { getLiquidationQueue, removePosition } from '../stores/positions.js'
+import { getLiquidationQueue, removePosition, getGlobalUPL } from '../stores/positions.js'
 
 // if an order or tx doesnt go through for some reason, the oracle can get stuck in a loop sending TXs (gas) for the same order every 2s, depleting funds
 // so there should be an exponential backoff if it tried an orderId and that orderId appears again in the queue - not after 2s, maybe 10 sec, then 1min, then stop trying
@@ -181,6 +181,34 @@ async function liquidatePositions() {
 
 }
 
+let lastRun = 0;
+async function setGlobalUPLs() {
+
+	// Set every 15min
+	if (lastRun > Date.now() - 15 * 60 * 1000) return;
+
+	globalUPL = getGlobalUPL(); // asset => upl
+
+	let assets = Object.keys(globalUPL);
+
+	if (!assets.length) return;
+
+	lastRun = Date.now();
+
+	let upls = Object.values(globalUPL);
+	upls = upls.map((u) => parseInt(u));
+
+	const contract = await getContract('Pool');
+
+	const tx = await contract.setGlobalUPLs(assets, upls);
+
+	const receipt = await tx.wait();
+
+	console.log('setGlobalUPLs receipt', receipt);
+
+	return true;
+}
+
 let t;
 // called with small timeout after TXs have returned
 export default async function submitTXs() {
@@ -190,6 +218,7 @@ export default async function submitTXs() {
 	try {
 		const execSuccess = await withNetworkRetries(executeOrders(), 4, 5000);
 		const liqSuccess = await withNetworkRetries(liquidatePositions(), 4, 5000);
+		const uplSuccess = await withNetworkRetries(setGlobalUPLs(), 4, 5000);
 		cleanRecents();
 	} catch(e) {
 		// Network failure even after retries
