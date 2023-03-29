@@ -187,7 +187,7 @@ async function setGlobalUPLs() {
 	// Set every 15min
 	if (lastRun > Date.now() - 15 * 60 * 1000) return;
 
-	globalUPL = getGlobalUPL(); // asset => upl
+	const globalUPL = getGlobalUPL(); // asset => upl
 
 	let assets = Object.keys(globalUPL);
 
@@ -218,7 +218,10 @@ export default async function submitTXs() {
 	try {
 		const execSuccess = await withNetworkRetries(executeOrders(), 4, 5000);
 		const liqSuccess = await withNetworkRetries(liquidatePositions(), 4, 5000);
+
+		// if you're not a whitelisted keeper, comment the line below
 		const uplSuccess = await withNetworkRetries(setGlobalUPLs(), 4, 5000);
+
 		cleanRecents();
 	} catch(e) {
 		// Network failure even after retries
