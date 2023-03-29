@@ -3,7 +3,7 @@
 import { EvmPriceServiceConnection } from '@pythnetwork/pyth-evm-js'
 import { PYTH_PRICE_SERVICE } from '../lib/config.js'
 
-import { getContract, withNetworkRetries, parseUnits } from '../lib/helpers.js'
+import { getContract, withNetworkRetries, parseUnits, parseUnitsForAsset } from '../lib/helpers.js'
 
 import { getMarketInfos } from '../stores/markets.js'
 import { getExecutionQueue, removeOrder, getAllTriggerOrders } from '../stores/orders.js'
@@ -187,10 +187,15 @@ async function setGlobalUPLs() {
 	// Set every 15min
 	if (lastRun > Date.now() - 15 * 60 * 1000) return;
 
-	const globalUPL = getGlobalUPL(); // asset => upl
+	let globalUPL = getGlobalUPL(); // asset => upl
 
-	// // TEST
-	// console.log('globalUPL', globalUPL);
+	// parse into big number based on the asset
+	for (const asset in globalUPL) {
+		globalUPL[asset] = parseUnitsForAsset(globalUPL[asset].toFixed(6), asset);
+	}
+
+	// TEST
+	console.log('globalUPL', globalUPL);
 	// return;
 
 	let assets = Object.keys(globalUPL);
@@ -200,7 +205,6 @@ async function setGlobalUPLs() {
 	lastRun = Date.now();
 
 	let upls = Object.values(globalUPL);
-	upls = upls.map((u) => parseInt(u));
 
 	const contract = await getContract('Pool');
 
