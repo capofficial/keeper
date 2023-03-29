@@ -1,4 +1,5 @@
 let positions = {}; // market => key => position
+let positionUPLs = {}; // market => key => upl
 let liquidationQueue = {}; // {position key: price}
 let fundingTrackers = {}; // key (asset||market) => ft
 
@@ -13,6 +14,23 @@ export function setPositions(_positions) {
 		if (!positions[position.market]) positions[position.market] = {};
 		positions[position.market][positionKey(position.user, position.market, position.asset)] = position;
 	}
+	// remove any positionUPLs items that are not in positions (eg a position that's been closed)
+	for (const market in positionUPLs) {
+		if (!positions[market]) {
+			delete positionUPLs[market];
+		}
+		if (!positionUPLs[market]) continue;
+		for (const key in positionUPLs[market]) {
+			if (!positions[market][key]) {
+				delete positionUPLs[market][key];
+			}
+		}
+	}
+}
+export function setPositionUPL(position, upl) {
+	// console.log('setPositionUPL', position, upl);
+	if (!positionUPLs[position.market]) positionUPLs[position.market] = {};
+	positionUPLs[position.market][positionKey(position.user, position.market, position.asset)] = 1 * upl;
 }
 export function addToLiquidationQueue(user, asset, market) {
 	const key = positionKey(user, market, asset);
@@ -25,6 +43,7 @@ export function removePosition(key) {
 	const keyParts = key.split('||');
 	const market = keyParts[1];
 	delete positions[market][key];
+	delete positionUPLs[market][key];
 	delete liquidationQueue[key];
 }
 export function setFundingTrackers(_fts) {
@@ -36,6 +55,19 @@ export function getAllPositions() {
 }
 export function getPositions(market) {
 	return Object.values(positions[market] || {}) || [];
+}
+export function getGlobalUPL() {
+	let totalUPL = {}; // asset => upl
+	for (const market in positions) {
+		if (!positions[market]) continue;
+		for (const key in positions[market]) {
+			const position = positions[market][key];
+			if (!position) continue;
+			if (!totalUPL[position.asset]) totalUPL[position.asset] = 0;
+			totalUPL[position.asset] += positionUPLs[market]?.[key] || 0;
+		}
+	}
+	return totalUPL;
 }
 export function getLiquidationQueue() {
 	return liquidationQueue;
