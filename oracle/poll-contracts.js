@@ -17,7 +17,7 @@ async function getMarketOrders() {
 	let length = await contract.getMarketOrderCount();
 	length = Math.min(10 + 1 * length, MAX_ITEMS_PER_FETCH);
 	let orders = cleanItems(await contract.getMarketOrders(length));
-	console.log(Date.now(), 'market orders', orders);
+	// console.log(Date.now(), 'market orders', orders);
 	setMarketOrders(orders);
 	return true;
 }
