@@ -193,8 +193,8 @@ let tries = 0;
 let lastRun = Date.now(); // leave at least 15min before setting first global UPL
 async function setGlobalUPLs() {
 
-	// Set every 15min
-	if (lastRun > Date.now() - 15 * 60 * 1000) return;
+	// Set every 1h
+	if (lastRun > Date.now() - 60 * 60 * 1000) return;
 
 	let globalUPL = getGlobalUPL(); // asset => upl
 
