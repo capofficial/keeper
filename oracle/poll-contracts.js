@@ -158,7 +158,7 @@ export default async function() {
 
 		// query fetch marketorders every 3 seconds, positions every 10 seconds, trigger orders every 30 seconds - and populate stores. settimeout after they return results. if they get out of hand with storage, maybe increase those intervals.
 
-		promiseWithInterval(getMarketOrders, 3000);
+		promiseWithInterval(getMarketOrders, 1000);
 		promiseWithInterval(getTriggerOrders, 10 * 1000);
 		promiseWithInterval(getPositions, 30 * 1000);
 		promiseWithInterval(getMarkets, 60 * 1000);
